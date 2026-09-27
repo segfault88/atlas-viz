@@ -8,9 +8,26 @@ Drag the timeline to move through time, and click the markers to jump to events 
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 
+## Controls
+
+| Input | Action |
+| --- | --- |
+| Drag | Rotate the view around 3I/ATLAS (or the probe, when following it) |
+| Right-drag / scroll | Pan / zoom |
+| Double-click, `C`, or **Recenter** | Re-centre on the followed object |
+| `Space` | Play / pause |
+| `←` `→` (`Shift` for a week) | Step one day |
+| Timeline | Drag to scrub; click a marker to jump to it (it snaps to nearby markers) |
+
+Toggles in the top-right panel show a distance line to Earth, planet orbits, and the ecliptic grid. The playback speed menu goes up to 5 years per second for the multi-decade missions.
+
 ## Intercept missions
 
 The side panel lists hypothetical spacecraft missions to 3I/ATLAS in three groups, each ranked by total ΔV. The ΔV is measured from a low parking orbit around the starting planet, so Earth launches include the burn out of Earth orbit. Clicking a mission flies a probe along its trajectory. The mission's burns and encounter appear on the timeline, and long missions switch the timeline to a decades-long range.
+
+- **Camera follows** in a mission's details switches between the comet and the probe. Following the probe during a solar Oberth burn zooms in close enough to see the Sun at true size, with the probe skimming past it.
+- **Show all paths** draws every mission's trajectory faintly, labelled at its intercept point.
+- The info panel adds the probe's distance to 3I/ATLAS and its speed.
 
 ### Published studies
 

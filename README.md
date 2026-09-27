@@ -1,18 +1,33 @@
 # 3I/ATLAS Tracker
 
-Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** moving through the solar system.
+Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing through the solar system. Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
 
-- Positions for the comet and planets come from the NASA/JPL Horizons API. They are heliocentric ecliptic J2000 vectors sampled every 12 h and interpolated with cubic Hermite splines.
-- Event markers (perihelion, close approaches, solar conjunction, ecliptic crossing) are computed from that data. Discovery and the observed-arc dates are also marked.
-- The dashed orange part of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
+Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 
-## Usage
-
-Open `index.html` in a browser. It is a single self-contained file; Three.js loads from a CDN.
-
-## Rebuilding
+## Development
 
 ```sh
-python3 scripts/fetch_data.py   # refresh data/ephemeris.json from JPL Horizons
-python3 scripts/build.py        # embed data into src/template.html -> index.html
+npm install
+npm run dev        # local dev server
+npm run build      # type-check + production build into dist/
+```
+
+## Project layout
+
+| Path | What it does |
+| --- | --- |
+| `index.html` | Page markup (panels, timeline) |
+| `src/main.ts` | Entry point: wires everything together and runs the frame loop |
+| `src/ephemeris.ts` | Loads the data and interpolates positions at any time |
+| `src/scene.ts` | Three.js world: Sun, planets, orbits, comet trail, camera follow |
+| `src/labels.ts` | HTML labels that follow 3D objects |
+| `src/hud.ts` | Info panel, event card, legend |
+| `src/timeline.ts` | Timeline slider, event markers, playback |
+| `scripts/fetch_data.py` | Downloads ephemerides from JPL Horizons and computes events |
+| `data/ephemeris.json` | Generated data (heliocentric ecliptic J2000, AU, 12 h steps) |
+
+## Refreshing the data
+
+```sh
+npm run fetch-data   # needs python3; no extra packages required
 ```

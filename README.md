@@ -12,18 +12,18 @@ Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The
 
 The side panel lists hypothetical spacecraft missions to 3I/ATLAS, ranked by total ΔV. The ΔV is measured from a low parking orbit around the starting planet, so Earth launches include the burn out of Earth orbit. Clicking a mission flies a probe along its trajectory. The mission's burns and encounter appear on the timeline, and long missions switch the timeline to a decades-long range.
 
-| Mission | Total ΔV (km/s) | Flyby speed (km/s) | Basis |
-| --- | ---: | ---: | --- |
-| Probe waiting at Mars | 2.6 | 86.7 | Yaginuma et al. 2025 |
-| Redirect Juno at Jupiter | 2.7 | 66.5 | Loeb, Hibberd & Crowl 2025 |
-| If we'd known in advance (Jan 2025 launch) | 5.2 | 80.0 | Yaginuma et al. 2025 |
-| Solar Oberth slingshot (2035 → 2085, 732 AU) | 16.4 | 15.2 | Hibberd, Eubanks & Hein 2026 |
-| Launch the day it was found | 18.6 | 79.7 | Yaginuma et al. 2025 |
-| One month to build a rocket | 24.8 | 69.3 | computed here |
-| Probe waiting at Saturn | 36.6 | 22.6 | computed here |
-| Stop alongside it (rendezvous by 2030) | 38.0 | matched | computed here |
-| Solar Oberth, 10-year sprint | 39.3 | 87.9 | Hibberd, Eubanks & Hein 2026 |
-| Brute-force chase (2035) | 45.0 | 11.5 | computed here |
+| Mission | Total ΔV (km/s) | Launch → intercept | Time to intercept | Flyby speed (km/s) | Basis |
+| --- | ---: | --- | --- | ---: | --- |
+| Probe waiting at Mars | 2.6 | 1 Jul 2025 → 3 Oct 2025 | 94 days (~3 months) | 86.7 | Yaginuma et al. 2025 |
+| Redirect Juno at Jupiter | 2.7 | 9 Sep 2025 → 14 Mar 2026 | 186 days (~6 months) | 66.5 | Loeb, Hibberd & Crowl 2025 |
+| If we'd known in advance (Jan 2025 launch) | 5.2 | 10 Jan 2025 → 15 Sep 2025 | 248 days (~8 months) | 80.0 | Yaginuma et al. 2025 |
+| Solar Oberth slingshot (2035 → 2085, 732 AU) | 16.4 | Jul 2035 → Jul 2085 | 50 years | 15.2 | Hibberd, Eubanks & Hein 2026 |
+| Launch the day it was found | 18.6 | 1 Jul 2025 → 15 Nov 2025 | 137 days (~4.5 months) | 79.7 | Yaginuma et al. 2025 |
+| One month to build a rocket | 24.8 | 1 Aug 2025 → 1 Dec 2025 | 122 days (~4 months) | 69.3 | computed here |
+| Probe waiting at Saturn | 36.6 | 1 Jul 2025 → 30 Nov 2027 | 2.4 years (883 days) | 22.6 | computed here |
+| Stop alongside it (rendezvous by 2030) | 38.0 | Sep 2025 → Dec 2029 | 4.3 years | matched | computed here |
+| Solar Oberth, 10-year sprint | 39.3 | Jul 2035 → Jul 2045 | 10 years | 87.9 | Hibberd, Eubanks & Hein 2026 |
+| Brute-force chase (2035) | 45.0 | Sep 2035 → Sep 2085 | 50 years | 11.5 | computed here |
 
 The trajectories are patched two-body arcs between real JPL positions, solved with a Lambert solver. The solar Oberth cases are re-optimised with scipy. They reproduce the published figures closely: the Earth and Mars cases of Yaginuma et al. match to within 0.01 km/s, and the 2035 solar Oberth reconstruction gives an 8.14 km/s burn at the Sun against the paper's 8.36. They are illustrations, not high-fidelity mission designs. For Juno, the ΔV is the paper's value; only the path is approximated.
 

@@ -4,11 +4,34 @@ Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing t
 
 **Live:** https://segfault88.github.io/atlas-viz/
 
-Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
-
-The **Intercept missions** panel plots hypothetical spacecraft trajectories to 3I/ATLAS, ranked by total ΔV. It includes published studies (redirecting Juno, a probe waiting at Mars, the 2035 solar Oberth slingshot) and some computed what-ifs (a probe parked at Saturn, stopping alongside the comet, a brute-force chase).
+Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter. You can also fly hypothetical intercept missions, from redirecting Juno to a 50-year solar Oberth slingshot.
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
+
+## Intercept missions
+
+The side panel lists hypothetical spacecraft missions to 3I/ATLAS, ranked by total ΔV. The ΔV is measured from a low parking orbit around the starting planet, so Earth launches include the burn out of Earth orbit. Clicking a mission flies a probe along its trajectory. The mission's burns and encounter appear on the timeline, and long missions switch the timeline to a decades-long range.
+
+| Mission | Total ΔV (km/s) | Flyby speed (km/s) | Basis |
+| --- | ---: | ---: | --- |
+| Probe waiting at Mars | 2.6 | 86.7 | Yaginuma et al. 2025 |
+| Redirect Juno at Jupiter | 2.7 | 66.5 | Loeb, Hibberd & Crowl 2025 |
+| If we'd known in advance (Jan 2025 launch) | 5.2 | 80.0 | Yaginuma et al. 2025 |
+| Solar Oberth slingshot (2035 → 2085, 732 AU) | 16.4 | 15.2 | Hibberd, Eubanks & Hein 2026 |
+| Launch the day it was found | 18.6 | 79.7 | Yaginuma et al. 2025 |
+| One month to build a rocket | 24.8 | 69.3 | computed here |
+| Probe waiting at Saturn | 36.6 | 22.6 | computed here |
+| Stop alongside it (rendezvous by 2030) | 38.0 | matched | computed here |
+| Solar Oberth, 10-year sprint | 39.3 | 87.9 | Hibberd, Eubanks & Hein 2026 |
+| Brute-force chase (2035) | 45.0 | 11.5 | computed here |
+
+The trajectories are patched two-body arcs between real JPL positions, solved with a Lambert solver. The solar Oberth cases are re-optimised with scipy. They reproduce the published figures closely: the Earth and Mars cases of Yaginuma et al. match to within 0.01 km/s, and the 2035 solar Oberth reconstruction gives an 8.14 km/s burn at the Sun against the paper's 8.36. They are illustrations, not high-fidelity mission designs. For Juno, the ΔV is the paper's value; only the path is approximated.
+
+References:
+
+- Yaginuma et al. 2025, [The Feasibility of a Spacecraft Flyby with the Third Interstellar Object 3I/ATLAS from Earth or Mars](https://arxiv.org/abs/2507.15755)
+- Loeb, Hibberd & Crowl 2025, [Intercepting 3I/ATLAS at Closest Approach to Jupiter with the Juno Spacecraft](https://arxiv.org/abs/2507.21402)
+- Hibberd, Eubanks & Hein 2026, [Catching 3I/ATLAS Using a Solar Oberth](https://arxiv.org/abs/2601.02533)
 
 ## Development
 
@@ -47,5 +70,3 @@ Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.
 npm run fetch-data   # needs python3; no extra packages required
 npm run missions     # rebuild missions.json; needs numpy + scipy (takes a few minutes)
 ```
-
-Mission trajectories are patched two-body arcs between real JPL positions, solved with a Lambert solver. They reproduce the published figures closely, e.g. the Earth and Mars cases of Yaginuma et al. to within 0.01 km/s. They are not high-fidelity mission designs.

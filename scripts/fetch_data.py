@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Fetch heliocentric ephemerides for 3I/ATLAS and the major planets from
-NASA/JPL Horizons, compute notable events, and write data/ephemeris.json.
+NASA/JPL Horizons, compute notable events, and write:
+
+  data/ephemeris.json      12 h samples, 2024-07 .. 2028-01 (main viewer range)
+  data/ephemeris-far.json  5 d samples, 2028-01 .. 2090-01 (long-range missions)
 
 Frame: ICRF/J2000 ecliptic, heliocentric (Sun centre), units AU and AU/day.
 """
@@ -18,7 +21,12 @@ API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 START = "2024-07-01"
 STOP = "2028-01-01"
 STEP = "12h"
-OUT = Path(__file__).resolve().parent.parent / "data" / "ephemeris.json"
+FAR_START = STOP
+FAR_STOP = "2090-01-01"
+FAR_STEP = "5d"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+OUT = DATA_DIR / "ephemeris.json"
+OUT_FAR = DATA_DIR / "ephemeris-far.json"
 
 COMET = {"id": "atlas", "name": "3I/ATLAS", "cmd": "C/2025 N1", "color": "#7cf7c8"}
 PLANETS = [
@@ -52,10 +60,10 @@ def horizons(params):
             time.sleep(2 + attempt * 3)
 
 
-def fetch_vectors(cmd):
+def fetch_vectors(cmd, start=START, stop=STOP, step=STEP):
     res = horizons({
-        "COMMAND": f"'{cmd}'", "EPHEM_TYPE": "VECTORS", "START_TIME": f"'{START}'",
-        "STOP_TIME": f"'{STOP}'", "STEP_SIZE": f"'{STEP}'", "VEC_TABLE": "2",
+        "COMMAND": f"'{cmd}'", "EPHEM_TYPE": "VECTORS", "START_TIME": f"'{start}'",
+        "STOP_TIME": f"'{stop}'", "STEP_SIZE": f"'{step}'", "VEC_TABLE": "2",
         "REF_PLANE": "ECLIPTIC", "REF_SYSTEM": "ICRF", "OUT_UNITS": "AU-D",
         "CSV_FORMAT": "YES", "VEC_LABELS": "NO",
     })
@@ -242,7 +250,20 @@ def main():
             entry["elements"] = elements[b["id"]]
         out["bodies"].append(entry)
 
-    OUT.parent.mkdir(exist_ok=True)
+    far = {"meta": None, "bodies": []}
+    for b in [COMET] + PLANETS:
+        print(f"Fetching {b['name']} (far range) ...", file=sys.stderr)
+        fjd, fpv, _ = fetch_vectors(b["cmd"], FAR_START, FAR_STOP, FAR_STEP)
+        far["meta"] = {"jd0": fjd[0], "step": fjd[1] - fjd[0], "n": len(fjd)}
+        far["bodies"].append({
+            "id": b["id"],
+            "pos": [round(x, 7) for row in fpv for x in row[:3]],
+            "vel": [round(x, 10) for row in fpv for x in row[3:]],
+        })
+
+    DATA_DIR.mkdir(exist_ok=True)
+    OUT_FAR.write_text(json.dumps(far, separators=(",", ":")))
+    print(f"Wrote {OUT_FAR} ({OUT_FAR.stat().st_size / 1e6:.2f} MB)", file=sys.stderr)
     OUT.write_text(json.dumps(out, separators=(",", ":")))
     print(f"Wrote {OUT} ({OUT.stat().st_size / 1e6:.2f} MB), {len(events)} events", file=sys.stderr)
     for e in events:

@@ -7,6 +7,7 @@ import { MissionLayer } from './missionLayer';
 import { MissionPanel } from './missionPanel';
 import { launchJd, needsFarData, type Mission } from './missions';
 import { SolarScene } from './scene';
+import { StarHover } from './stars';
 import { Timeline } from './timeline';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -20,6 +21,7 @@ const missionLayer = new MissionLayer(world.scene);
 const labels = new Labels($('labels'), world, () => missionLayer.labels());
 const hud = new Hud();
 const timeline = new Timeline(nowJd, nowJd);
+new StarHover(world.stars, world.camera, world.renderer.domElement, $('tooltip'), $('labels'));
 
 // ---------- missions ----------
 let farPathBuilt = false;

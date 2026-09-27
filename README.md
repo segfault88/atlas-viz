@@ -6,7 +6,7 @@ Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing t
 
 Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter. You can also fly hypothetical intercept missions, from redirecting Juno to a 50-year solar Oberth slingshot.
 
-The background is the real naked-eye sky: all 8,404 stars brighter than magnitude 6.5 from the Yale Bright Star Catalogue, drawn at their true positions with brightness and colour from the catalogue. Look back along the comet's incoming path and you'll find Sagittarius, the direction it arrived from.
+The background is the real naked-eye sky: all 8,404 stars brighter than magnitude 6.5 from the Yale Bright Star Catalogue, drawn at their true positions with brightness and colour from the catalogue. Hover over any of the ~150 brightest stars for its name, constellation, magnitude and distance. Look back along the comet's incoming path and you'll find Sagittarius, the direction it arrived from.
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 
@@ -20,6 +20,7 @@ Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The
 | `Space` | Play / pause |
 | `←` `→` (`Shift` for a week) | Step one day |
 | Timeline | Drag to scrub; click a marker to jump to it (it snaps to nearby markers) |
+| Hover a bright star | Name, constellation, magnitude, distance, and when its light left it |
 
 Toggles in the top-right panel show a distance line to Earth, planet orbits, and the ecliptic grid. The playback speed menu goes up to 5 years per second for the multi-decade missions.
 
@@ -73,6 +74,7 @@ References:
 - Loeb, Hibberd & Crowl 2025, [Intercepting 3I/ATLAS at Closest Approach to Jupiter with the Juno Spacecraft](https://arxiv.org/abs/2507.21402)
 - Hibberd, Eubanks & Hein 2026, [Catching 3I/ATLAS Using a Solar Oberth](https://arxiv.org/abs/2601.02533)
 - Hoffleit & Warren 1991, [Yale Bright Star Catalogue, 5th revised ed.](https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50) (star positions, magnitudes, colours)
+- David Nash, [HYG star database v4.1](https://github.com/astronexus/HYG-Database) (star names, constellations and Hipparcos distances), licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - ESA, [Comet Interceptor](https://www.esa.int/Science_Exploration/Space_Science/Comet_Interceptor) (≥600 m/s propulsion, ~1.5 km/s effective when departing L2)
 
 ## Development
@@ -93,7 +95,7 @@ Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.
 | `src/main.ts` | Entry point: wires everything together and runs the frame loop |
 | `src/ephemeris.ts` | Loads the data and interpolates positions at any time |
 | `src/scene.ts` | Three.js world: Sun, planets, orbits, comet trail, camera follow |
-| `src/stars.ts` | Background sky from the star catalogue (custom point shader) |
+| `src/stars.ts` | Background sky from the star catalogue (custom point shader) and bright-star hover info |
 | `src/labels.ts` | HTML labels that follow 3D objects |
 | `src/hud.ts` | Info panel, event card, legend |
 | `src/timeline.ts` | Timeline slider, event markers, playback |
@@ -101,13 +103,13 @@ Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.
 | `src/missionLayer.ts` | 3D paths, probe, burn and encounter markers for missions |
 | `src/missionPanel.ts` | Side panel listing missions with ΔV bars and details |
 | `scripts/fetch_data.py` | Downloads ephemerides from JPL Horizons and computes events |
-| `scripts/fetch_stars.py` | Downloads the Yale Bright Star Catalogue (CDS V/50) and converts it to ecliptic coordinates |
+| `scripts/fetch_stars.py` | Downloads the Yale Bright Star Catalogue (CDS V/50), converts it to ecliptic coordinates, and adds names and distances for the brightest stars from HYG |
 | `scripts/orbits.py` | Lambert solver, conic sampling, departure-burn maths |
 | `scripts/missions.py` | Builds the intercept missions (two-body patched conics, scipy optimiser) |
 | `data/ephemeris.json` | Generated data (heliocentric ecliptic J2000, AU, 12 h steps, 2024–2028) |
 | `data/ephemeris-far.json` | Same at 5-day steps for 2028–2090 (loaded only for long missions) |
 | `data/missions.json` | Generated mission trajectories |
-| `data/stars.json` | Generated star positions, magnitudes and colours |
+| `data/stars.json` | Generated star positions, magnitudes and colours, plus names and distances for the brightest (CC BY-SA 4.0, derived from HYG) |
 
 ## Refreshing the data
 

@@ -123,6 +123,7 @@ export class SolarScene {
   readonly controls: OrbitControls;
 
   readonly grid = makeEclipticGrid();
+  readonly stars: THREE.Points;
   readonly orbits = new THREE.Group();
   readonly sun = makeDot(0xfff2c8, 12);
   readonly planets: { name: string; id: string; dot: THREE.Points }[];
@@ -154,6 +155,7 @@ export class SolarScene {
 
   constructor(container: HTMLElement) {
     const { renderer, scene, camera } = this;
+    this.stars = makeStarfield(camera, Math.min(devicePixelRatio, 2));
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
     scene.background = new THREE.Color(0x05070d);
@@ -164,7 +166,7 @@ export class SolarScene {
       screenSpacePanning: true, zoomSpeed: 1.2,
     });
 
-    scene.add(makeStarfield(camera, renderer.getPixelRatio()), this.grid, this.orbits);
+    scene.add(this.stars, this.grid, this.orbits);
 
     // Sun and planets. The sphere is the Sun at true size, visible only when zoomed right in.
     const sunSphere = new THREE.Mesh(new THREE.SphereGeometry(SUN_RADIUS_AU, 48, 24), new THREE.MeshBasicMaterial({ color: 0xffd98a }));

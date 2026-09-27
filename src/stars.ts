@@ -77,3 +77,92 @@ export function makeStarfield(camera: THREE.Camera, pixelRatio: number): THREE.P
   points.onBeforeRender = () => points.position.copy(camera.position);
   return points;
 }
+
+// ---------- hover info for the brightest stars ----------
+
+export interface NamedStar {
+  /** Index into the star list (sorted brightest first, so also a brightness rank). */
+  i: number;
+  name: string;
+  /** Bayer/Flamsteed designation when the star also has a proper name, e.g. "α Canis Majoris". */
+  designation: string;
+  constellation: string;
+  mag: number;
+  distLy: number | null;
+}
+
+const HOVER_RADIUS_PX = 10;
+const ordinal = (n: number) => {
+  const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+/** Shows a tooltip (and a ring) when the pointer is near one of the named bright stars. */
+export class StarHover {
+  private readonly named = (raw as unknown as { named: NamedStar[] }).named;
+  private readonly ring = Object.assign(document.createElement('div'), { className: 'star-ring', hidden: true });
+  private readonly v = new THREE.Vector3();
+  private current: NamedStar | null = null;
+
+  constructor(
+    private readonly stars: THREE.Points,
+    private readonly camera: THREE.Camera,
+    canvas: HTMLElement,
+    private readonly tooltip: HTMLElement,
+    layer: HTMLElement,
+  ) {
+    layer.appendChild(this.ring);
+    canvas.addEventListener('pointermove', ev => {
+      if (ev.buttons !== 0 || ev.pointerType === 'touch') return this.hide();
+      this.pick(ev.clientX, ev.clientY);
+    });
+    canvas.addEventListener('pointerdown', () => this.hide());
+    canvas.addEventListener('pointerleave', () => this.hide());
+    canvas.addEventListener('wheel', () => this.hide(), { passive: true });
+  }
+
+  private pick(mx: number, my: number) {
+    const pos = this.stars.geometry.getAttribute('position');
+    let best: NamedStar | null = null, bestD = HOVER_RADIUS_PX, bx = 0, by = 0;
+    for (const s of this.named) {
+      // Stars follow the camera, so world position = camera position + catalogue direction × radius
+      this.v.fromBufferAttribute(pos, s.i).add(this.camera.position).project(this.camera);
+      if (this.v.z > 1 || this.v.z < -1) continue;
+      const x = (this.v.x * 0.5 + 0.5) * innerWidth, y = (-this.v.y * 0.5 + 0.5) * innerHeight;
+      const d = Math.hypot(x - mx, y - my);
+      if (d < bestD) { best = s; bestD = d; bx = x; by = y; }
+    }
+    if (!best) return this.hide();
+    this.ring.hidden = false;
+    this.ring.style.transform = `translate(${bx}px, ${by}px)`;
+    if (best !== this.current) this.fill(best);
+    this.current = best;
+    const tip = this.tooltip, r = tip.getBoundingClientRect();
+    tip.style.left = `${Math.min(Math.max(8, bx + 14), innerWidth - r.width - 8)}px`;
+    tip.style.top = `${Math.min(Math.max(8, by - r.height / 2), innerHeight - r.height - 8)}px`;
+  }
+
+  private fill(s: NamedStar) {
+    const line = (cls: string, text: string) => Object.assign(document.createElement('div'), { className: cls, textContent: text });
+    const rows = [line('t', s.name)];
+    rows.push(line('when', [s.designation, s.constellation].filter(Boolean).join(' · ')));
+    rows.push(line('', `Magnitude ${s.mag.toFixed(2)} (${ordinal(s.i + 1)} brightest)`));
+    if (s.distLy !== null) {
+      const ly = s.distLy < 100 ? s.distLy.toFixed(1) : Math.round(s.distLy).toLocaleString();
+      rows.push(line('', `${ly} light-years away`));
+      const year = new Date().getUTCFullYear() - s.distLy;
+      if (s.distLy >= 2) {
+        rows.push(line('when', `The light you see left it ${year > 0 ? `around ${Math.round(year)}` : `around ${Math.round(-year)} BC`}`));
+      }
+    }
+    this.tooltip.replaceChildren(...rows);
+    this.tooltip.hidden = false;
+  }
+
+  private hide() {
+    if (!this.current) return;
+    this.current = null;
+    this.ring.hidden = true;
+    this.tooltip.hidden = true;
+  }
+}

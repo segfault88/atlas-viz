@@ -149,3 +149,7 @@ button:hover { background: #232d49; }
 .mitem.rough .mname { font-style: italic; }
 .mtag.rough { border-style: dashed; color: #ffbe6e; border-color: rgba(255, 190, 110, 0.45); }
 .mfill.over { background: repeating-linear-gradient(90deg, #7d8fc4 0 58px, transparent 58px 60px, #7d8fc4 60px 64px, transparent 64px 66px); }
+
+/* Bright-star hover */
+.star-ring { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%;
+             border: 1.5px solid rgba(230, 235, 245, 0.75); box-shadow: 0 0 6px rgba(0, 0, 0, 0.6); pointer-events: none; }

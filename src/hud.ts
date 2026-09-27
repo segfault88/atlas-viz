@@ -19,7 +19,6 @@ const EVENT_LABELS: Record<EventKind, string> = {
   node: 'Ecliptic crossing',
 };
 const LIGHT_KM_S = 299792.458;
-const EVENT_CARD_DAYS = 4; // show the event card within ± this many days of an event
 
 const $ = (id: string) => document.getElementById(id)!;
 
@@ -27,6 +26,7 @@ export class Hud {
   private readonly el = {
     date: $('date'), rSun: $('r-sun'), rEarth: $('r-earth'), speed: $('speed-v'), light: $('light'),
     status: $('status'), card: $('event-card'),
+    probeRows: document.querySelectorAll<HTMLElement>('.probe-row'), probeDist: $('probe-dist'), probeSpeed: $('probe-speed'),
   };
 
   constructor() {
@@ -38,7 +38,12 @@ export class Hud {
       + `${meta.arc.join(' → ')}) · fetched ${meta.fetched}`;
   }
 
-  update(t: number) {
+  /**
+   * @param near  timeline marker to feature in the event card, if any
+   * @param probe selected mission's probe state, or null when no mission is selected
+   */
+  update(t: number, near: { jd: number; title: string; detail: string } | null,
+    probe: { launched: boolean; toComet: number; speed: number } | null) {
     const c = positionAt(byId.atlas, t), e = positionAt(byId.earth, t);
     const rSun = Math.hypot(...c);
     const rEarth = Math.hypot(c[0] - e[0], c[1] - e[1], c[2] - e[2]);
@@ -57,10 +62,12 @@ export class Hud {
     this.el.status.className = `status ${cls}`;
     this.el.status.textContent = text;
 
-    let near = null;
-    for (const ev of events) {
-      if (Math.abs(ev.jd - t) < EVENT_CARD_DAYS && (!near || Math.abs(ev.jd - t) < Math.abs(near.jd - t))) near = ev;
+    for (const row of this.el.probeRows) row.hidden = !probe;
+    if (probe) {
+      this.el.probeDist.textContent = probe.launched ? `${probe.toComet.toFixed(3)} AU` : 'not launched';
+      this.el.probeSpeed.textContent = probe.launched && probe.speed > 0 ? `${probe.speed.toFixed(1)} km/s` : '—';
     }
+
     const card = this.el.card;
     if (near) {
       card.querySelector('.t')!.textContent = `${near.title} — ${formatDate(near.jd, false)}`;

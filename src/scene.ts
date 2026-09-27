@@ -5,13 +5,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
-  arcEnd, bodies, byId, events, jd0, n, sampleScene, scenePositionAt, step, toScene,
+  arcEnd, bodies, byId, events, samples, scenePositionAt, toScene,
   type OrbitalElements,
 } from './ephemeris';
+import { sampleIndex } from './missions';
 
 const COMET_COLOR = 0x7cf7c8;
-const TRAIL_FADE_SAMPLES = 220; // ~110 days: trail brightens over this span toward the comet
-const APPROACH_LINK_DAYS = 25;  // show the link to a planet within ± this many days of closest approach
+const TRAIL_FADE_DAYS = 110;   // trail brightens over this span toward the comet
+const APPROACH_LINK_DAYS = 25;
+const SUN_RADIUS_AU = 695700 / 149597870.7;  // show the link to a planet within ± this many days of closest approach
 
 // ---------- small builders ----------
 
@@ -39,7 +41,7 @@ const DISC = discTexture(false);
 const GLOW = discTexture(true);
 
 /** A single point drawn at a constant pixel size, always on top. */
-function makeDot(color: THREE.ColorRepresentation, sizePx: number, tex = DISC): THREE.Points {
+export function makeDot(color: THREE.ColorRepresentation, sizePx: number, tex = DISC): THREE.Points {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3));
   const mat = new THREE.PointsMaterial({
@@ -53,7 +55,7 @@ function makeDot(color: THREE.ColorRepresentation, sizePx: number, tex = DISC): 
 }
 
 /** A two-point line whose endpoints are updated every frame. */
-function makeSegment(material: THREE.LineBasicMaterial | THREE.LineDashedMaterial): THREE.Line {
+export function makeSegment(material: THREE.LineBasicMaterial | THREE.LineDashedMaterial): THREE.Line {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(new Array(6).fill(0), 3));
   const l = new THREE.Line(g, material);
@@ -61,7 +63,7 @@ function makeSegment(material: THREE.LineBasicMaterial | THREE.LineDashedMateria
   return l;
 }
 
-function setSegment(line: THREE.Line, a: THREE.Vector3, b: THREE.Vector3, dash?: number) {
+export function setSegment(line: THREE.Line, a: THREE.Vector3, b: THREE.Vector3, dash?: number) {
   const attr = line.geometry.getAttribute('position') as THREE.BufferAttribute;
   attr.setXYZ(0, a.x, a.y, a.z);
   attr.setXYZ(1, b.x, b.y, b.z);
@@ -150,15 +152,22 @@ export class SolarScene {
   readonly approachLink: LinkInfo;
   showEarthLink = false;
 
+  /** The point the camera follows (the comet by default; see setFocus). */
+  private focus: THREE.Vector3 = this.cometPos;
+  private readonly lastFocus = new THREE.Vector3();
+
   private readonly atlas = byId.atlas;
   private readonly cometGlow = makeDot(COMET_COLOR, 30, GLOW);
-  private readonly trailPos = new Float32Array((n + 1) * 3);
-  private readonly trailCol = new Float32Array((n + 1) * 3);
+  private cometTimes = new Float64Array(0);
+  private cometPoints: THREE.Vector3[] = [];
+  private trailPos = new Float32Array(0);
+  private trailCol = new Float32Array(0);
   private readonly trailGeo = new THREE.BufferGeometry();
+  private readonly pathGroup = new THREE.Group();
+  private predictedLine: THREE.Line | null = null;
   private readonly tail: THREE.Line;
   private readonly dropLine: THREE.Line;
   private readonly foot = makeDot(COMET_COLOR, 4);
-  private readonly lastComet = new THREE.Vector3();
   private readonly tmp = new THREE.Vector3();
 
   constructor(container: HTMLElement) {
@@ -169,14 +178,15 @@ export class SolarScene {
 
     this.controls = new OrbitControls(camera, renderer.domElement);
     Object.assign(this.controls, {
-      enableDamping: true, dampingFactor: 0.1, minDistance: 0.02, maxDistance: 120,
+      enableDamping: true, dampingFactor: 0.1, minDistance: 0.002, maxDistance: 3000,
       screenSpacePanning: true, zoomSpeed: 1.2,
     });
 
     scene.add(makeStarfield(camera), this.grid, this.orbits);
 
-    // Sun and planets
-    scene.add(makeDot(0xffc76b, 46, GLOW), this.sun);
+    // Sun and planets. The sphere is the Sun at true size, visible only when zoomed right in.
+    const sunSphere = new THREE.Mesh(new THREE.SphereGeometry(SUN_RADIUS_AU, 48, 24), new THREE.MeshBasicMaterial({ color: 0xffd98a }));
+    scene.add(sunSphere, makeDot(0xffc76b, 46, GLOW), this.sun);
     this.planets = bodies.filter(b => b.id !== 'atlas').map(b => {
       const dot = makeDot(b.color, b.id === 'jupiter' || b.id === 'saturn' ? 9 : 7);
       scene.add(dot);
@@ -187,23 +197,10 @@ export class SolarScene {
       return { name: b.name, id: b.id, dot };
     });
 
-    // Comet full path: solid (faint) within the observed arc, dashed orange after it (prediction)
-    const observed: THREE.Vector3[] = [], predicted: THREE.Vector3[] = [];
-    for (let k = 0; k < n; k++) {
-      const t = jd0 + k * step, v = sampleScene(this.atlas, k);
-      if (t <= arcEnd) observed.push(v);
-      if (t >= arcEnd - step) predicted.push(v.clone());
-    }
-    const observedLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(observed),
-      new THREE.LineBasicMaterial({ color: COMET_COLOR, transparent: true, opacity: 0.18 }));
-    const predictedLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(predicted),
-      new THREE.LineDashedMaterial({ color: 0xffbe6e, transparent: true, opacity: 0.3, dashSize: 0.08, gapSize: 0.08 }));
-    predictedLine.computeLineDistances();
-    scene.add(observedLine, predictedLine);
+    scene.add(this.pathGroup);
+    this.buildCometPath();
 
     // Travelled trail (rebuilt each frame up to the current time)
-    this.trailGeo.setAttribute('position', new THREE.BufferAttribute(this.trailPos, 3));
-    this.trailGeo.setAttribute('color', new THREE.BufferAttribute(this.trailCol, 3));
     const trail = new THREE.Line(this.trailGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 }));
     trail.frustumCulled = false;
 
@@ -224,6 +221,30 @@ export class SolarScene {
     this.approachLink = link(0xc9d3ff);
   }
 
+  /** (Re)build the comet's full path and trail buffers from all loaded ephemeris samples. */
+  buildCometPath() {
+    const all = samples(this.atlas);
+    this.cometTimes = Float64Array.from(all.map(s => s.jd));
+    this.cometPoints = all.map(s => s.p);
+
+    // Solid (faint) within the observed arc, dashed orange after it (prediction)
+    const observed = all.filter(s => s.jd <= arcEnd).map(s => s.p);
+    const predicted = all.filter((s, i) => s.jd >= arcEnd || all[i + 1]?.jd > arcEnd).map(s => s.p);
+    this.pathGroup.clear();
+    const observedLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(observed),
+      new THREE.LineBasicMaterial({ color: COMET_COLOR, transparent: true, opacity: 0.18 }));
+    const predictedLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(predicted),
+      new THREE.LineDashedMaterial({ color: 0xffbe6e, transparent: true, opacity: 0.3, dashSize: 0.08, gapSize: 0.08 }));
+    predictedLine.computeLineDistances();
+    this.predictedLine = predictedLine;
+    this.pathGroup.add(observedLine, predictedLine);
+
+    this.trailPos = new Float32Array((all.length + 1) * 3);
+    this.trailCol = new Float32Array((all.length + 1) * 3);
+    this.trailGeo.setAttribute('position', new THREE.BufferAttribute(this.trailPos, 3));
+    this.trailGeo.setAttribute('color', new THREE.BufferAttribute(this.trailCol, 3));
+  }
+
   resize(w: number, h: number) {
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
@@ -233,7 +254,7 @@ export class SolarScene {
   /** Initial framing: behind the comet looking back toward the Sun, slightly above the ecliptic. */
   frameInitial(t: number) {
     scenePositionAt(this.atlas, t, this.cometPos);
-    this.lastComet.copy(this.cometPos);
+    this.lastFocus.copy(this.cometPos);
     this.controls.target.copy(this.cometPos);
     const d = Math.max(3, this.cometPos.length() * 0.9 + 2);
     const dir = this.tmp.copy(this.cometPos).setY(0).normalize();
@@ -241,11 +262,36 @@ export class SolarScene {
     this.controls.update();
   }
 
-  /** Move camera + target back so the comet is centred, keeping the current viewing angle. */
+  /** Move camera + target so the focus point is centred, keeping the current viewing angle. */
   recenter() {
-    const delta = this.tmp.subVectors(this.cometPos, this.controls.target);
+    const delta = this.tmp.subVectors(this.focus, this.controls.target);
     this.controls.target.add(delta);
     this.camera.position.add(delta);
+  }
+
+  /**
+   * Follow a different point (e.g. a probe). The vector is read every frame.
+   * Optionally zoom to `distance` AU, keeping the current viewing direction.
+   */
+  setFocus(v: THREE.Vector3, distance?: number) {
+    this.focus = v;
+    this.lastFocus.copy(v);
+    this.recenter();
+    if (distance !== undefined) {
+      const dir = this.tmp.subVectors(this.camera.position, this.controls.target).normalize();
+      this.camera.position.copy(this.controls.target).addScaledVector(dir, distance);
+    }
+  }
+
+  /**
+   * Shift camera and target by the focus point's displacement since the last frame, so
+   * the user's rotation / pan / zoom are preserved relative to it. Call after all updates.
+   */
+  follow() {
+    const delta = this.tmp.subVectors(this.focus, this.lastFocus);
+    this.camera.position.add(delta);
+    this.controls.target.add(delta);
+    this.lastFocus.copy(this.focus);
   }
 
   update(t: number) {
@@ -258,6 +304,8 @@ export class SolarScene {
     this.updateTrail(t);
 
     const camDist = this.camera.position.distanceTo(this.controls.target);
+    const predicted = this.predictedLine!.material as THREE.LineDashedMaterial;
+    predicted.dashSize = predicted.gapSize = camDist * 0.012;
 
     // Anti-sunward tail: direction is real, length is stylised for visibility.
     const r = cometPos.length();
@@ -270,13 +318,6 @@ export class SolarScene {
     this.foot.position.copy(tmp);
 
     this.updateLinks(t, camDist * 0.008);
-
-    // Follow the comet: shift camera and target by its displacement so the user's
-    // rotation / pan / zoom are preserved relative to it.
-    tmp.subVectors(cometPos, this.lastComet);
-    this.camera.position.add(tmp);
-    this.controls.target.add(tmp);
-    this.lastComet.copy(cometPos);
   }
 
   render() {
@@ -286,17 +327,20 @@ export class SolarScene {
 
   /** Trail = every sample up to t plus the interpolated current point, fading with age. */
   private updateTrail(t: number) {
-    const { trailPos, trailCol, atlas, cometPos } = this;
-    const k = Math.min(Math.max(Math.floor((t - jd0) / step), 0), n - 1);
+    const { trailPos, trailCol, cometPoints, cometTimes, cometPos } = this;
+    const k = Math.max(sampleIndex(cometTimes, t), 0);
     const count = k + 2;
     for (let j = 0; j <= k; j++) {
-      trailPos[3 * j] = atlas.pos[3 * j];
-      trailPos[3 * j + 1] = atlas.pos[3 * j + 2];
-      trailPos[3 * j + 2] = -atlas.pos[3 * j + 1];
+      const p = cometPoints[j];
+      trailPos[3 * j] = p.x;
+      trailPos[3 * j + 1] = p.y;
+      trailPos[3 * j + 2] = p.z;
     }
     trailPos.set([cometPos.x, cometPos.y, cometPos.z], 3 * (k + 1));
+    // Fade by elapsed time (not sample count) so the look is the same on the 12 h and 5 d grids
     for (let j = 0; j < count; j++) {
-      const f = Math.max(0.18, 1 - (count - 1 - j) / TRAIL_FADE_SAMPLES);
+      const age = t - (j <= k ? cometTimes[j] : t);
+      const f = Math.max(0.18, 1 - age / TRAIL_FADE_DAYS);
       trailCol[3 * j] = 0.49 * f;
       trailCol[3 * j + 1] = 0.97 * f;
       trailCol[3 * j + 2] = 0.78 * f;

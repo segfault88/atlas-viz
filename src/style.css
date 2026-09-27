@@ -91,3 +91,51 @@ button:hover { background: #232d49; }
   #credit { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
   #timeline { gap: 8px; padding: 8px 10px; }
 }
+
+/* Intercept missions panel */
+.label.probe { color: #ff9ee0; font-weight: 600; }
+.label.burn { color: #f3d7ea; font-family: var(--mono); font-size: 11px; }
+.label.ghost { color: var(--muted); font-size: 11px; }
+.marker.mission { border-radius: 50%; transform: none; }
+.marker.mission:hover { transform: scale(1.25); }
+.marker.mission.encounter { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px #ff5fc8; }
+
+#missions { top: calc(122px + env(safe-area-inset-top, 0px)); right: 14px; width: 340px; padding: 0;
+            max-height: calc(100vh - 122px - 120px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+            overflow: auto; }
+#missions summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+                    gap: 8px; padding: 10px 12px 4px; position: sticky; top: 0; background: rgba(12, 16, 28, 0.96); z-index: 1; }
+#missions summary::-webkit-details-marker { display: none; }
+#missions summary::before { content: "▸"; color: var(--muted); margin-right: -2px; transition: transform .15s; }
+#missions[open] summary::before { transform: rotate(90deg); }
+#missions .mtitle { font-weight: 600; flex: 1; }
+#missions .mall { font-size: 12px; color: var(--muted); display: flex; gap: 5px; align-items: center; cursor: pointer; }
+#missions .msub { font-size: 11px; color: var(--muted); padding: 0 12px 6px; }
+#mission-list { list-style: none; margin: 0; padding: 0 6px 8px; }
+.mrow { width: 100%; display: grid; grid-template-columns: 1fr 72px 34px; align-items: center; gap: 8px;
+        background: none; border: 0; border-radius: 6px; padding: 6px; text-align: left; }
+.mrow:hover { background: rgba(255, 255, 255, 0.05); }
+#mission-list li.selected .mrow { background: rgba(255, 95, 200, 0.12); box-shadow: inset 2px 0 0 #ff5fc8; }
+.mname { font-size: 13px; line-height: 1.25; }
+.mtag { display: inline-block; margin-left: 6px; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase;
+        color: var(--muted); border: 1px solid var(--panel-border); border-radius: 4px; padding: 0 4px; vertical-align: 1px; }
+.mbar { height: 6px; background: var(--track); border-radius: 0 3px 3px 0; overflow: hidden; }
+.mfill { display: block; height: 100%; background: #7d8fc4; border-radius: 0 3px 3px 0; min-width: 2px; }
+.mval { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+.mdetail { padding: 4px 8px 10px 10px; font-size: 12px; color: var(--muted); border-left: 2px solid #ff5fc8; margin: 0 0 6px 6px; }
+.mdetail p { margin: 6px 0; }
+.msummary { color: var(--text); line-height: 1.45; }
+.mburns { width: 100%; border-collapse: collapse; margin: 6px 0; }
+.mburns td { padding: 3px 4px; border-top: 1px solid rgba(140, 170, 255, 0.08); vertical-align: top; }
+.mburns .mdate { white-space: nowrap; font-family: var(--mono); font-size: 11px; }
+.mburns .mnum { text-align: right; white-space: nowrap; font-family: var(--mono); color: var(--text); }
+.mburns .menc td { color: #ff9ee0; }
+.msource a { color: #9fb6ff; }
+.mfollow { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.mfollow button { font-size: 12px; padding: 2px 8px; }
+.mfollow button.active { background: rgba(255, 95, 200, 0.2); border-color: #ff5fc8; }
+
+@media (max-width: 760px) {
+  #missions { top: auto; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); left: 14px; right: 14px; width: auto; max-height: 45vh; }
+  #credit { display: none; }
+}

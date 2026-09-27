@@ -163,14 +163,14 @@ def build():
 
     # 1. Hindsight: the optimal launch was before discovery
     _, g = direct_flyby("earth", jd("2025-01-10"), jd("2025-09-15"), "200 km low Earth orbit", "Launch from low Earth orbit")
-    add({"id": "hindsight", "name": "If we'd known in advance", "kind": "paper", "source": Y25, "color": "#9ad0ff",
+    add({"id": "hindsight", "name": "If we'd known in advance", "kind": "paper", "source": Y25,
          "summary": "The cheapest direct launch from Earth left in January 2025, six months before 3I/ATLAS was "
                     "discovered. Needs a hyperbolic excess speed of only 6.9 km/s, within reach of today's rockets.",
          "paper": "v∞ 6.94 km/s, flyby at 79.96 km/s"}, g)
 
     # 2. Launch on discovery day
     _, g = direct_flyby("earth", jd("2025-07-01"), jd("2025-11-15"), "200 km low Earth orbit", "Launch from low Earth orbit")
-    add({"id": "earth-discovery", "name": "Launch the day it was found", "kind": "paper", "source": Y25, "color": "#ff9f6e",
+    add({"id": "earth-discovery", "name": "Launch the day it was found", "kind": "paper", "source": Y25,
          "summary": "The best direct Earth launch after discovery: lift off on 1 July 2025. It needs v∞ = 24 km/s "
                     "(C3 ≈ 576 km²/s²), nearly double the record set by New Horizons (v∞ ≈ 12.6 km/s). That is far beyond any existing launcher.",
          "paper": "v∞ 24.0 km/s, flyby at 79.73 km/s"}, g)
@@ -178,14 +178,14 @@ def build():
     # 3. One month to prepare (computed)
     r = grid_search("earth", ("2025-08-01", "2025-08-01"), "2027-06-01")
     _, g = direct_flyby("earth", r["t1"], r["t2"], "200 km low Earth orbit", "Launch from low Earth orbit")
-    add({"id": "earth-1month", "name": "One month to build a rocket", "kind": "computed", "color": "#ff6b8b",
+    add({"id": "earth-1month", "name": "One month to build a rocket", "kind": "computed",
          "summary": "Allow a month of preparation after discovery and launch on 1 August 2025. By then Earth has moved "
                     "and 3I/ATLAS is closer to the Sun, so the best intercept needs even more energy than launching on day one."}, g)
 
     # 4. Probe waiting at Mars
     _, g = direct_flyby("mars", jd("2025-07-01"), jd("2025-10-03"), "300 km low Mars orbit", "Depart low Mars orbit")
     g["burns"][0]["dv"] = round(departure_dv(g["stats"]["vinf"], "mars", 300), 2)
-    add({"id": "mars-staged", "name": "Probe waiting at Mars", "kind": "paper", "source": Y25, "color": "#e0623a",
+    add({"id": "mars-staged", "name": "Probe waiting at Mars", "kind": "paper", "source": Y25,
          "summary": "3I/ATLAS passed just 0.19 AU from Mars. A spacecraft already orbiting Mars could have left on "
                     "discovery day and met it on 3 October 2025 with a modest burn. This is the case for staging "
                     "interceptors around other planets.",
@@ -194,7 +194,7 @@ def build():
     # 5. Juno redirect (paper ΔV; heliocentric arc approximated from Jupiter)
     t1, t2 = jd("2025-09-09"), jd("2026-03-14")
     r = body_to_comet("jupiter", t1, t2)
-    add({"id": "juno", "name": "Redirect Juno at Jupiter", "kind": "paper", "color": "#d9a877",
+    add({"id": "juno", "name": "Redirect Juno at Jupiter", "kind": "paper",
          "source": {"label": "Loeb, Hibberd & Crowl 2025 — Intercepting 3I/ATLAS at closest approach to Jupiter with Juno",
                     "url": "https://arxiv.org/abs/2507.21402"},
          "summary": "NASA's Juno was already orbiting Jupiter. Two burns in September 2025 totalling 2.68 km/s (a "
@@ -209,7 +209,7 @@ def build():
     # 6. Probe waiting at Saturn (computed) — spoiler: nowhere near the path
     r = grid_search("saturn", ("2025-07-01", "2026-07-01"), "2027-12-01", ddep=5, darr=5)
     _, g = direct_flyby("saturn", r["t1"], r["t2"], "Low Saturn orbit (60,000 km radius)", "Depart low Saturn orbit")
-    add({"id": "saturn-staged", "name": "Probe waiting at Saturn", "kind": "computed", "color": "#e6d49a",
+    add({"id": "saturn-staged", "name": "Probe waiting at Saturn", "kind": "computed",
          "summary": "What if we had parked interceptors at the outer planets? For 3I/ATLAS, Saturn was nowhere near "
                     "its path, so even with a deep Oberth burn in Saturn's gravity well this needs a huge ΔV. "
                     "Staging only helps if the object happens to pass near your planet."}, g)
@@ -217,7 +217,7 @@ def build():
     # 7. Rendezvous (computed): match velocity and fly alongside
     r = grid_search("earth", ("2025-07-01", "2026-07-01"), "2030-01-01", rendezvous=True, ddep=5, darr=10)
     dvL = departure_dv(r["vinf"], "earth")
-    add({"id": "rendezvous", "name": "Stop alongside it", "kind": "computed", "color": "#c49bff",
+    add({"id": "rendezvous", "name": "Stop alongside it", "kind": "computed",
          "summary": "Every other plan is a flyby at tens of km/s, lasting seconds. To orbit or land, you have to match "
                     "3I/ATLAS's velocity, which means chasing it out of the solar system at around 60 km/s. This is the "
                     "cheapest version that arrives before 2030. It would need fusion or antimatter propulsion.",
@@ -230,7 +230,7 @@ def build():
     r = grid_search("earth", ("2035-01-01", "2035-12-31"), "2085-12-31", ddep=5, darr=30, min_tof=50 * 365.25 - 1)
     r = body_to_comet("earth", r["t1"], r["t1"] + 50 * 365.25)
     _, g = direct_flyby("earth", r["t1"], r["t2"], "200 km low Earth orbit", "Launch from low Earth orbit")
-    add({"id": "direct-chase", "name": "Brute-force chase (2035)", "kind": "computed", "color": "#8a94ab",
+    add({"id": "direct-chase", "name": "Brute-force chase (2035)", "kind": "computed",
          "summary": "No tricks: launch straight at 3I/ATLAS in 2035 and catch it 50 years later. Compare its total ΔV "
                     "with the solar Oberth plan below, which has the same launch year and flight time."}, g)
 
@@ -238,7 +238,7 @@ def build():
     H26 = {"label": "Hibberd, Eubanks & Hein 2026 — Catching 3I/ATLAS using a Solar Oberth",
            "url": "https://arxiv.org/abs/2601.02533"}
     _, g = solar_oberth(50)
-    add({"id": "solar-oberth", "name": "Solar Oberth slingshot (50 yr)", "kind": "paper", "source": H26, "color": "#ffd166",
+    add({"id": "solar-oberth", "name": "Solar Oberth slingshot (50 yr)", "kind": "paper", "source": H26,
          "summary": "Launch in 2035 to Jupiter, whose gravity cancels the probe's sideways motion so it falls straight "
                     "at the Sun. It skims 3.2 solar radii from the Sun's centre at about 345 km/s and fires an 8 km/s "
                     "burn there, where the Oberth effect multiplies its value. It catches 3I/ATLAS around 732 AU from "
@@ -246,7 +246,7 @@ def build():
          "paper": "C3 130.2 km²/s², SOM ΔV 8.355 km/s, 732 AU, arrives at 16 km/s"}, g)
 
     _, g = solar_oberth(10)
-    add({"id": "solar-oberth-fast", "name": "Solar Oberth, 10-year sprint", "kind": "paper", "source": H26, "color": "#ff7b72",
+    add({"id": "solar-oberth-fast", "name": "Solar Oberth, 10-year sprint", "kind": "paper", "source": H26,
          "summary": "The same slingshot, but squeezed into 10 years. The burn at the Sun balloons to about 30 km/s and "
                     "the probe screams past 3I/ATLAS at around 85 km/s, 240 AU out. The paper judged flights under "
                     "30–40 years untenable.",

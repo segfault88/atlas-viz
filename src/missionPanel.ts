@@ -11,6 +11,15 @@ const years = (days: number) => {
   return y < 1 ? `${Math.round(days)} days` : `${y.toFixed(y < 10 ? 1 : 0)} years`;
 };
 
+const GROUPS: { kind: Mission['kind']; title: string; note: string }[] = [
+  { kind: 'paper', title: 'Published studies', note: 'Reconstructed from peer-reviewed / preprint papers' },
+  { kind: 'computed', title: 'What-ifs', note: 'Solved here with the same trajectory model' },
+  { kind: 'rough', title: 'Rough ideas', note: 'Back-of-envelope and loosely modelled; for fun' },
+];
+const TAGS: Record<Mission['kind'], string> = { paper: 'study', computed: 'what-if', rough: 'rough' };
+/** Bars are scaled to this ΔV; anything above it is drawn full-width with an overflow cap. */
+const BAR_MAX_DV = 50;
+
 export interface MissionPanelHandlers {
   select: (m: Mission | null) => void;
   follow: (target: 'comet' | 'probe') => void;
@@ -23,30 +32,41 @@ export class MissionPanel {
   private readonly rows = new Map<string, HTMLLIElement>();
 
   constructor(private readonly on: MissionPanelHandlers) {
-    const sorted = [...missions].sort((a, b) => a.totalDv - b.totalDv);
-    const maxDv = Math.max(...sorted.map(m => m.totalDv));
-    for (const m of sorted) {
-      const li = el('li');
-      const row = el('button', 'mrow');
-      row.type = 'button';
-      row.setAttribute('aria-expanded', 'false');
-      const name = el('span', 'mname', m.name);
-      name.append(el('span', `mtag ${m.kind}`, m.kind === 'paper' ? 'study' : 'what-if'));
-      const bar = el('span', 'mbar');
-      const fill = el('span', 'mfill');
-      fill.style.width = `${(m.totalDv / maxDv) * 100}%`;
-      bar.append(fill);
-      row.append(name, bar, el('span', 'mval', m.totalDv.toFixed(1)));
-      row.addEventListener('click', () => this.select(this.selectedId === m.id ? null : m));
-      li.append(row);
-      this.list.append(li);
-      this.rows.set(m.id, li);
+    const dvKey = (m: Mission) => (m.propulsion ? Infinity : m.totalDv);
+    for (const g of GROUPS) {
+      const group = missions.filter(m => m.kind === g.kind).sort((a, b) => dvKey(a) - dvKey(b));
+      if (!group.length) continue;
+      const head = el('li', `mgroup ${g.kind}`);
+      head.append(el('span', 'mgroup-title', g.title), el('span', 'mgroup-note', g.note));
+      this.list.append(head);
+      for (const m of group) this.addRow(m);
     }
     ($('opt-all-missions') as HTMLInputElement).addEventListener('change', e => {
       this.on.showAll((e.target as HTMLInputElement).checked);
     });
     // Start collapsed on small screens so the 3D view stays visible
     if (matchMedia('(max-width: 760px)').matches) ($('missions') as HTMLDetailsElement).open = false;
+  }
+
+  private addRow(m: Mission) {
+    const li = el('li', `mitem ${m.kind}`);
+    const row = el('button', 'mrow');
+    row.type = 'button';
+    row.setAttribute('aria-expanded', 'false');
+    const name = el('span', 'mname', m.name);
+    name.append(el('span', `mtag ${m.kind}`, TAGS[m.kind]));
+    const bar = el('span', 'mbar');
+    if (!m.propulsion) {
+      const fill = el('span', m.totalDv > BAR_MAX_DV ? 'mfill over' : 'mfill');
+      fill.style.width = `${Math.min(m.totalDv / BAR_MAX_DV, 1) * 100}%`;
+      bar.append(fill);
+    }
+    row.append(name, bar, el('span', 'mval', m.propulsion ? m.propulsion : m.totalDv.toFixed(1)));
+    row.title = m.propulsion ? 'No rocket ΔV: pushed by a ground-based laser' : `Total ΔV ${m.totalDv.toFixed(2)} km/s`;
+    row.addEventListener('click', () => this.select(this.selectedId === m.id ? null : m));
+    li.append(row);
+    this.list.append(li);
+    this.rows.set(m.id, li);
   }
 
   select(m: Mission | null) {
@@ -74,7 +94,7 @@ export class MissionPanel {
     for (const b of m.burns) {
       const tr = el('tr');
       tr.append(el('td', 'mdate', formatDate(b.jd, false)), el('td', '', b.label),
-        el('td', 'mnum', b.dv < 0.05 ? 'free' : `${b.dv.toFixed(2)} km/s`));
+        el('td', 'mnum', b.dv >= 0.05 ? `${b.dv.toFixed(2)} km/s` : m.propulsion ?? 'free'));
       burns.append(tr);
     }
     const e = m.encounter;
@@ -106,6 +126,9 @@ export class MissionPanel {
       a.rel = 'noopener';
       src.append(a);
       if (m.paper) src.append(el('span', 'mpaper', ` Published figures: ${m.paper}. The path shown is this tool's patched-conic reconstruction.`));
+      if (m.kind === 'rough') src.append(el('span', 'mpaper', ' Trajectory and ΔV are this tool\'s rough estimate.'));
+    } else if (m.kind === 'rough') {
+      src.append('Rough estimate by this tool: a simplified trajectory model, not a mission design.');
     } else {
       src.append('Computed by this tool: best two-body (Lambert) trajectory between JPL Horizons positions.');
     }

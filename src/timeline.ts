@@ -111,7 +111,8 @@ export class Timeline {
     if (m) {
       for (const b of m.burns) {
         if (b.dv < 0.05) {
-          this.markers.push({ jd: b.jd, title: 'Probe: gravity assist', detail: b.label, color: PROBE_CSS, cls: 'mission' });
+          const title = m.propulsion === 'laser' ? 'Probe: laser launch' : 'Probe: gravity assist';
+          this.markers.push({ jd: b.jd, title, detail: b.label, color: PROBE_CSS, cls: 'mission' });
         } else {
           this.markers.push({ jd: b.jd, title: `Probe burn: ΔV ${b.dv.toFixed(2)} km/s`, detail: b.label, color: PROBE_CSS, cls: 'mission' });
         }

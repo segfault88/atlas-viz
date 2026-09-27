@@ -139,3 +139,13 @@ button:hover { background: #232d49; }
   #missions { top: auto; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); left: 14px; right: 14px; width: auto; max-height: 45vh; }
   #credit { display: none; }
 }
+
+/* Mission groups */
+.mgroup { display: flex; flex-direction: column; padding: 10px 6px 3px; }
+.mgroup:first-child { padding-top: 2px; }
+.mgroup-title { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text); font-weight: 600; }
+.mgroup-note { font-size: 11px; color: var(--muted); }
+.mgroup.rough { margin-top: 6px; border-top: 1px dashed rgba(140, 170, 255, 0.2); }
+.mitem.rough .mname { font-style: italic; }
+.mtag.rough { border-style: dashed; color: #ffbe6e; border-color: rgba(255, 190, 110, 0.45); }
+.mfill.over { background: repeating-linear-gradient(90deg, #7d8fc4 0 58px, transparent 58px 60px, #7d8fc4 60px 64px, transparent 64px 66px); }

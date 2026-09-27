@@ -29,7 +29,10 @@ interface Leg { t: number[]; p: number[] }
 export interface Mission {
   id: string;
   name: string;
-  kind: 'paper' | 'computed';
+  /** paper = published study; computed = what-if solved here; rough = back-of-envelope idea */
+  kind: 'paper' | 'computed' | 'rough';
+  /** Set for missions not driven by rocket ΔV (e.g. a laser-pushed sail). */
+  propulsion?: 'laser';
   summary: string;
   source?: { label: string; url: string };
   /** The published figures, when this is a reconstruction of a paper. */

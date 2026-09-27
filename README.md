@@ -10,28 +10,50 @@ Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The
 
 ## Intercept missions
 
-The side panel lists hypothetical spacecraft missions to 3I/ATLAS, ranked by total ΔV. The ΔV is measured from a low parking orbit around the starting planet, so Earth launches include the burn out of Earth orbit. Clicking a mission flies a probe along its trajectory. The mission's burns and encounter appear on the timeline, and long missions switch the timeline to a decades-long range.
+The side panel lists hypothetical spacecraft missions to 3I/ATLAS in three groups, each ranked by total ΔV. The ΔV is measured from a low parking orbit around the starting planet, so Earth launches include the burn out of Earth orbit. Clicking a mission flies a probe along its trajectory. The mission's burns and encounter appear on the timeline, and long missions switch the timeline to a decades-long range.
 
-| Mission | Total ΔV (km/s) | Launch → intercept | Time to intercept | Flyby speed (km/s) | Basis |
+### Published studies
+
+| Mission | Total ΔV (km/s) | Launch → intercept | Time to intercept | Flyby speed (km/s) | Source |
 | --- | ---: | --- | --- | ---: | --- |
 | Probe waiting at Mars | 2.6 | 1 Jul 2025 → 3 Oct 2025 | 94 days (~3 months) | 86.7 | Yaginuma et al. 2025 |
 | Redirect Juno at Jupiter | 2.7 | 9 Sep 2025 → 14 Mar 2026 | 186 days (~6 months) | 66.5 | Loeb, Hibberd & Crowl 2025 |
 | If we'd known in advance (Jan 2025 launch) | 5.2 | 10 Jan 2025 → 15 Sep 2025 | 248 days (~8 months) | 80.0 | Yaginuma et al. 2025 |
-| Solar Oberth slingshot (2035 → 2085, 732 AU) | 16.4 | Jul 2035 → Jul 2085 | 50 years | 15.2 | Hibberd, Eubanks & Hein 2026 |
+| Solar Oberth slingshot (burn at 3.2 R☉) | 16.4 | Jul 2035 → Jul 2085 | 50 years | 15.2 | Hibberd, Eubanks & Hein 2026 |
 | Launch the day it was found | 18.6 | 1 Jul 2025 → 15 Nov 2025 | 137 days (~4.5 months) | 79.7 | Yaginuma et al. 2025 |
-| One month to build a rocket | 24.8 | 1 Aug 2025 → 1 Dec 2025 | 122 days (~4 months) | 69.3 | computed here |
-| Probe waiting at Saturn | 36.6 | 1 Jul 2025 → 30 Nov 2027 | 2.4 years (883 days) | 22.6 | computed here |
-| Stop alongside it (rendezvous by 2030) | 38.0 | Sep 2025 → Dec 2029 | 4.3 years | matched | computed here |
 | Solar Oberth, 10-year sprint | 39.3 | Jul 2035 → Jul 2045 | 10 years | 87.9 | Hibberd, Eubanks & Hein 2026 |
-| Brute-force chase (2035) | 45.0 | Sep 2035 → Sep 2085 | 50 years | 11.5 | computed here |
 
-The trajectories are patched two-body arcs between real JPL positions, solved with a Lambert solver. The solar Oberth cases are re-optimised with scipy. They reproduce the published figures closely: the Earth and Mars cases of Yaginuma et al. match to within 0.01 km/s, and the 2035 solar Oberth reconstruction gives an 8.14 km/s burn at the Sun against the paper's 8.36. They are illustrations, not high-fidelity mission designs. For Juno, the ΔV is the paper's value; only the path is approximated.
+### What-ifs (solved here with the same trajectory model)
+
+| Mission | Total ΔV (km/s) | Launch → intercept | Time to intercept | Flyby speed (km/s) |
+| --- | ---: | --- | --- | ---: |
+| One month to build a rocket | 24.8 | 1 Aug 2025 → 1 Dec 2025 | 122 days (~4 months) | 69.3 |
+| Probe waiting at Saturn | 36.6 | 1 Jul 2025 → 30 Nov 2027 | 2.4 years (883 days) | 22.6 |
+| Stop alongside it (rendezvous by 2030) | 38.0 | Sep 2025 → Dec 2029 | 4.3 years | matched |
+| Brute-force chase (2035) | 45.0 | Sep 2035 → Sep 2085 | 50 years | 11.5 |
+
+### Rough ideas (back-of-envelope, loosely modelled)
+
+These are shown in italics with a dashed "rough" tag in the app. Treat them as order-of-magnitude illustrations.
+
+| Idea | Total ΔV (km/s) | Launch → intercept | Time to intercept | Flyby speed (km/s) | What it shows |
+| --- | ---: | --- | --- | ---: | --- |
+| Probe waiting at Venus | 7.3 | 6 Aug 2025 → 23 Nov 2025 | 110 days (~3.5 months) | 78.7 | Staging only pays off near the object's path: about 3× the Mars cost |
+| Solar Oberth skimming the Sun (2 R☉) | 15.2 | Aug 2035 → Aug 2085 | 50 years | 15.8 | Diving deeper saves only about 1.3 km/s, and no heat shield would survive |
+| Probe waiting at L2 (Comet Interceptor style) | 15.4 | 1 Jul 2025 → 15 Nov 2025 | 137 days (~4.5 months) | 79.7 | About 10× ESA Comet Interceptor's ~1.5 km/s effective budget |
+| Solar Oberth at Parker Solar Probe distance (9.86 R☉) | 22.8 | Jul 2035 → Jul 2085 | 50 years | 14.4 | What proven heat-shield tech allows |
+| Jupiter Oberth catch-up (best launch: 2028) | 32.0 | Jan 2028 → Jan 2078 | 50 years | 10.4 | Jupiter's gravity well is too shallow: about 2× the solar Oberth plan |
+| Launch via a Mars flyby | 94.3 | 1 Jul 2025 → 30 Jun 2028 | 3 years | 25.4 | Doesn't help: Mars was 2 AU away, on the far side of the Sun |
+| Laser light sail (1% of light speed) | no rocket | 1 Jan 2050 → 24 Jun 2050 | 174 days (~6 months) | 2,940 | A Starshot-class laser array would make it trivial (and pass at 3,000 km/s) |
+
+The trajectories are patched two-body arcs between real JPL positions, solved with a Lambert solver. The solar Oberth and planet-flyby cases are optimised with scipy, with flybys modelled as a single burn at closest approach. They reproduce the published figures closely: the Earth and Mars cases of Yaginuma et al. match to within 0.01 km/s, and the 2035 solar Oberth reconstruction gives an 8.14 km/s burn at the Sun against the paper's 8.36. They are illustrations, not high-fidelity mission designs. For Juno, the ΔV is the paper's value; only the path is approximated.
 
 References:
 
 - Yaginuma et al. 2025, [The Feasibility of a Spacecraft Flyby with the Third Interstellar Object 3I/ATLAS from Earth or Mars](https://arxiv.org/abs/2507.15755)
 - Loeb, Hibberd & Crowl 2025, [Intercepting 3I/ATLAS at Closest Approach to Jupiter with the Juno Spacecraft](https://arxiv.org/abs/2507.21402)
 - Hibberd, Eubanks & Hein 2026, [Catching 3I/ATLAS Using a Solar Oberth](https://arxiv.org/abs/2601.02533)
+- ESA, [Comet Interceptor](https://www.esa.int/Science_Exploration/Space_Science/Comet_Interceptor) (≥600 m/s propulsion, ~1.5 km/s effective when departing L2)
 
 ## Development
 

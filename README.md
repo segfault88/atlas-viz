@@ -4,7 +4,7 @@ Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing t
 
 **Live:** https://segfault88.github.io/atlas-viz/
 
- Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
+Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 

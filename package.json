@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "fetch-data": "python3 scripts/fetch_data.py",
-    "missions": "python3 scripts/missions.py"
+    "missions": "python3 scripts/missions.py",
+    "fetch-stars": "python3 scripts/fetch_stars.py"
   },
   "dependencies": {
     "three": "^0.186.1"

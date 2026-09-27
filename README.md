@@ -6,6 +6,8 @@ Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing t
 
 Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter. You can also fly hypothetical intercept missions, from redirecting Juno to a 50-year solar Oberth slingshot.
 
+The background is the real naked-eye sky: all 8,404 stars brighter than magnitude 6.5 from the Yale Bright Star Catalogue, drawn at their true positions with brightness and colour from the catalogue. Look back along the comet's incoming path and you'll find Sagittarius, the direction it arrived from.
+
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 
 ## Controls
@@ -70,6 +72,7 @@ References:
 - Yaginuma et al. 2025, [The Feasibility of a Spacecraft Flyby with the Third Interstellar Object 3I/ATLAS from Earth or Mars](https://arxiv.org/abs/2507.15755)
 - Loeb, Hibberd & Crowl 2025, [Intercepting 3I/ATLAS at Closest Approach to Jupiter with the Juno Spacecraft](https://arxiv.org/abs/2507.21402)
 - Hibberd, Eubanks & Hein 2026, [Catching 3I/ATLAS Using a Solar Oberth](https://arxiv.org/abs/2601.02533)
+- Hoffleit & Warren 1991, [Yale Bright Star Catalogue, 5th revised ed.](https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50) (star positions, magnitudes, colours)
 - ESA, [Comet Interceptor](https://www.esa.int/Science_Exploration/Space_Science/Comet_Interceptor) (≥600 m/s propulsion, ~1.5 km/s effective when departing L2)
 
 ## Development
@@ -90,6 +93,7 @@ Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.
 | `src/main.ts` | Entry point: wires everything together and runs the frame loop |
 | `src/ephemeris.ts` | Loads the data and interpolates positions at any time |
 | `src/scene.ts` | Three.js world: Sun, planets, orbits, comet trail, camera follow |
+| `src/stars.ts` | Background sky from the star catalogue (custom point shader) |
 | `src/labels.ts` | HTML labels that follow 3D objects |
 | `src/hud.ts` | Info panel, event card, legend |
 | `src/timeline.ts` | Timeline slider, event markers, playback |
@@ -97,15 +101,18 @@ Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.
 | `src/missionLayer.ts` | 3D paths, probe, burn and encounter markers for missions |
 | `src/missionPanel.ts` | Side panel listing missions with ΔV bars and details |
 | `scripts/fetch_data.py` | Downloads ephemerides from JPL Horizons and computes events |
+| `scripts/fetch_stars.py` | Downloads the Yale Bright Star Catalogue (CDS V/50) and converts it to ecliptic coordinates |
 | `scripts/orbits.py` | Lambert solver, conic sampling, departure-burn maths |
 | `scripts/missions.py` | Builds the intercept missions (two-body patched conics, scipy optimiser) |
 | `data/ephemeris.json` | Generated data (heliocentric ecliptic J2000, AU, 12 h steps, 2024–2028) |
 | `data/ephemeris-far.json` | Same at 5-day steps for 2028–2090 (loaded only for long missions) |
 | `data/missions.json` | Generated mission trajectories |
+| `data/stars.json` | Generated star positions, magnitudes and colours |
 
 ## Refreshing the data
 
 ```sh
 npm run fetch-data   # needs python3; no extra packages required
 npm run missions     # rebuild missions.json; needs numpy + scipy (takes a few minutes)
+npm run fetch-stars  # rebuild stars.json from the Yale Bright Star Catalogue
 ```

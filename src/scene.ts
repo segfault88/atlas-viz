@@ -9,6 +9,7 @@ import {
   type OrbitalElements,
 } from './ephemeris';
 import { sampleIndex } from './missions';
+import { makeStarfield } from './stars';
 
 const COMET_COLOR = 0x7cf7c8;
 const TRAIL_FADE_DAYS = 110;   // trail brightens over this span toward the comet
@@ -90,25 +91,6 @@ function orbitPoints(el: OrbitalElements, N = 512): THREE.Vector3[] {
   return pts;
 }
 
-function makeStarfield(camera: THREE.Camera): THREE.Points {
-  const N = 3000, R = 2000, pts: number[] = [], cols: number[] = [];
-  for (let i = 0; i < N; i++) {
-    const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, s = Math.sqrt(1 - u * u);
-    pts.push(R * s * Math.cos(th), R * u, R * s * Math.sin(th));
-    const b = 0.35 + Math.random() * 0.65;
-    cols.push(b, b, b * (0.9 + Math.random() * 0.2));
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-  const stars = new THREE.Points(g, new THREE.PointsMaterial({
-    size: 1.4, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.7,
-  }));
-  // Keep stars "at infinity" by following the camera.
-  stars.onBeforeRender = () => stars.position.copy(camera.position);
-  return stars;
-}
-
 /** Reference rings on the ecliptic plane at notable radii, plus spokes every 30°. */
 function makeEclipticGrid(): THREE.Group {
   const grid = new THREE.Group();
@@ -182,7 +164,7 @@ export class SolarScene {
       screenSpacePanning: true, zoomSpeed: 1.2,
     });
 
-    scene.add(makeStarfield(camera), this.grid, this.orbits);
+    scene.add(makeStarfield(camera, renderer.getPixelRatio()), this.grid, this.orbits);
 
     // Sun and planets. The sphere is the Sun at true size, visible only when zoomed right in.
     const sunSphere = new THREE.Mesh(new THREE.SphereGeometry(SUN_RADIUS_AU, 48, 24), new THREE.MeshBasicMaterial({ color: 0xffd98a }));

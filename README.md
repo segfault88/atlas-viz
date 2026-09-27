@@ -6,7 +6,7 @@ Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing t
 
 Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter. You can also fly hypothetical intercept missions, from redirecting Juno to a 50-year solar Oberth slingshot.
 
-The background is the real naked-eye sky: all 8,404 stars brighter than magnitude 6.5 from the Yale Bright Star Catalogue, drawn at their true positions with brightness and colour from the catalogue. Hover over any of the ~150 brightest stars for its name, constellation, magnitude and distance. Look back along the comet's incoming path and you'll find Sagittarius, the direction it arrived from.
+The background is the real naked-eye sky: all 8,393 stars brighter than magnitude 6.5 from the Yale Bright Star Catalogue (minus a handful of novae it lists at outburst brightness), drawn at their true positions with brightness and colour from the catalogue. Hover over any of the ~150 brightest stars for its name, constellation, magnitude and distance. Look back along the comet's incoming path and you'll find Sagittarius, the direction it arrived from.
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 

@@ -1,6 +1,10 @@
 # 3I/ATLAS Tracker
 
-Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing through the solar system. Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
+Interactive 3D view of the interstellar comet **3I/ATLAS (C/2025 N1)** passing through the solar system.
+
+**Live:** https://segfault88.github.io/atlas-viz/
+
+ Drag the timeline to move through time, and click the markers to jump to events such as perihelion and the close approaches to Mars, Earth and Jupiter.
 
 Positions come from [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/). The dashed orange section of the path comes after the last observation in JPL's orbit fit, so it is a prediction.
 
@@ -11,6 +15,8 @@ npm install
 npm run dev        # local dev server
 npm run build      # type-check + production build into dist/
 ```
+
+Pushing to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.yml`).
 
 ## Project layout
 
